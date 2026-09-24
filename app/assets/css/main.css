@@ -1,0 +1,117 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background: #efe8e2;
+}
+
+body {
+  font-family: Manrope, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  color: #2b231e;
+}
+
+a {
+  color: #b4552f;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #8f3f21;
+}
+
+::selection {
+  background: #e2c9ba;
+  color: #2b231e;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@keyframes v2Rise {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: none; }
+}
+
+.page-rise {
+  animation: v2Rise 0.9s ease both;
+}
+
+/* Reusable hover utilities, replacing the design's per-node style-hover attrs */
+.hover-accent {
+  transition: color 0.5s ease;
+}
+.hover-accent:hover {
+  color: #b4552f;
+}
+
+.hover-accent-underline {
+  border-bottom: 1px solid transparent;
+  transition: color 0.5s ease, border-color 0.5s ease;
+}
+.hover-accent-underline:hover {
+  color: #b4552f;
+  border-bottom-color: #b4552f;
+}
+
+.btn-primary {
+  background: #a94d29;
+  color: #f8f4f0;
+  transition: background 0.5s ease;
+  cursor: pointer;
+}
+.btn-primary:hover {
+  background: #8f3f21;
+}
+
+.btn-hero:hover {
+  transform: translateY(-2px);
+}
+
+.form-input {
+  border: 1px solid #d3c6ba;
+  border-radius: 4px;
+  background: #f4efe9;
+  padding: 15px 16px;
+  font-family: Manrope, Helvetica, Arial, sans-serif;
+  font-size: 13.5px;
+  font-weight: 300;
+  color: #2b231e;
+  outline: none;
+  transition: border-color 0.4s ease;
+  width: 100%;
+}
+.form-input:focus {
+  border-color: #a94d29;
+}
+
+.swipe-arrow {
+  transition: color 0.4s ease, opacity 0.4s ease;
+}
+.swipe-arrow:hover {
+  color: #b4552f;
+}
+
+.header-link {
+  transition: color 0.55s ease;
+}
+.header-link:hover {
+  color: var(--header-hover-color, #b4552f);
+}
+
+.nav-link {
+  border-bottom: 1px solid transparent;
+  transition: color 0.5s ease, border-color 0.5s ease;
+}
+.nav-link:hover {
+  color: var(--header-hover-color, #b4552f);
+  border-bottom-color: #b4552f;
+}
+
+#v2-swiper {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#v2-swiper::-webkit-scrollbar {
+  display: none;
+}
