@@ -23,7 +23,7 @@ onMounted(() => {
   })
   const load = () => {
     el.preload = 'auto'
-    el.src = '/images/selfvid.mp4'
+    el.src = useRuntimeConfig().app.baseURL.replace(/\/$/, '') + '/images/selfvid.mp4'
     el.load()
   }
   if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 3000 })
