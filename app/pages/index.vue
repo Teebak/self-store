@@ -22,6 +22,17 @@ onUnmounted(() => clearInterval(pillarTimer))
 // Tiny copy of the hero video's first frame, shown blurred until the video can play
 const heroPoster = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAfAEADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAABgcCAwQF/8QALhAAAgECBAMHAwUAAAAAAAAAAQIDBBEABRIhEzFBBgciUWFxgZGhsRQVJTJS/8QAGAEBAAMBAAAAAAAAAAAAAAAABAECAwX/xAAcEQADAQADAQEAAAAAAAAAAAAAAQIRAxIhE1H/2gAMAwEAAhEDEQA/AGGYfTEDT3wrVzzN5WH8xUi43HGbb74r/f8AM5JFQZrVEFufHYX9OeLlNGm8eiJhiUe8Y+PycC3ZKomqI8weaSR/Gmku+o8jjf2hkzZcoK5QgMjGzuGAZF8xf88x08xhb9NoW+Ar22zFanMtCSLZGZNOrcEbG49/nbATWiQNqbdTywSZrGlElLQmKMzRxh5XsCdbC5F+tthe/THMlhjkiIkF7csHVKa0U4dThw154a3dnVmXI56VmcmCXUoJuFVhsB8hj84WlUiJTq2gI2ogC1jbB93WG0WZJY3HCO/rrxu32WhuvV4Dz5PUl9IIuN7G/L6YhBl0yHiBS5Teym3xjC1NU1K3lq5pCejG/wCTjVRdnJay3DnS/UG4IxP1T80r8q/A27ImRKSr4yBGPD2+GxbmOeRVNU2TxuEjdH48/MqApLAeu3PpgZySjagrHi/VywiRlBZArq9jyIIuOZ3GKayNVzFwzNMBJ4i+xN9yDb1vywbl5Glsi+DjW5RVUUpCI3iAQlF1m7kA3BPlsdvb0xnnSwscaKiq49Qr6AlgiW53AUL97YrqSggUgNrJNzfa3t73wfXorFgP1ZY1B1En3OGb3YwKmR1ExSzyTaS3+gFBA+NR+uF3UU4mcWsC2wJ88H/djNqoKyBpPHFKLx2/rcWvfrfT9vXdyaco51Jqmf/Z'
 
+// Hero video sources, rendered into the HTML so the download starts before the app hydrates.
+// The browser takes the first one whose media query and codec it supports.
+// HEVC gives equal-or-better quality at a smaller size; H.264 is the fallback (e.g. Firefox).
+const videoBase = useRuntimeConfig().app.baseURL.replace(/\/$/, '') + '/images/'
+const heroSources = [
+  { file: 'hero-sm-hevc.mp4', media: '(max-width: 900px)', type: 'video/mp4; codecs="hvc1.1.6.L120.B0"' }, // 1.2 MB
+  { file: 'hero-1280.mp4', media: '(max-width: 900px)', type: 'video/mp4; codecs="avc1.4d001f"' }, // 2.1 MB
+  { file: 'hero-lg-hevc.mp4', media: undefined, type: 'video/mp4; codecs="hvc1.1.6.L120.B0"' }, // 3.2 MB
+  { file: 'hero-1920.mp4', media: undefined, type: 'video/mp4' } // 3.8 MB
+]
+
 const heroVideo = ref<HTMLVideoElement | null>(null)
 const videoReady = ref(false)
 
@@ -30,16 +41,12 @@ onMounted(() => {
   if (!el) return
   el.muted = true
   // Fade in only once frames are actually playing, not just when the first one decodes
-  el.addEventListener('playing', () => { videoReady.value = true }, { once: true })
-  el.addEventListener('canplay', () => {
-    const p = el.play()
-    if (p && p.catch) p.catch(() => {})
-  }, { once: true })
-  // 1280px (~2.5 MB) for phones, 1920px (~4 MB) for larger screens
-  const file = window.matchMedia('(max-width: 900px)').matches ? 'hero-1280.mp4' : 'hero-1920.mp4'
-  el.preload = 'auto'
-  el.src = useRuntimeConfig().app.baseURL.replace(/\/$/, '') + '/images/' + file
-  el.load()
+  const reveal = () => { videoReady.value = true }
+  if (!el.paused && el.readyState >= 3) reveal()
+  else el.addEventListener('playing', reveal, { once: true })
+  // Autoplay normally starts it; this covers browsers that waited for hydration
+  const p = el.play()
+  if (p && p.catch) p.catch(() => {})
 })
 </script>
 
@@ -51,9 +58,11 @@ onMounted(() => {
       />
       <video
         ref="heroVideo"
-        muted loop playsinline preload="none"
+        muted autoplay loop playsinline preload="auto"
         :style="{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity .8s ease', opacity: videoReady ? '1' : '0' }"
-      />
+      >
+        <source v-for="s in heroSources" :key="s.file" :src="videoBase + s.file" :media="s.media" :type="s.type">
+      </video>
       <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(43,35,30,0.34) 0%,rgba(43,35,30,0.12) 34%,rgba(43,35,30,0.62) 100%);pointer-events:none" />
       <div style="position:relative;margin-top:auto;padding:0 clamp(20px,5vw,84px);display:flex;justify-content:flex-start;pointer-events:none">
         <div style="font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(76px,18vw,264px);letter-spacing:-0.012em;text-transform:uppercase;line-height:0.82;color:#ffffff;text-shadow:0 2px 44px rgba(43,35,30,0.42);display:inline-block;transform:scaleY(1.1);transform-origin:bottom left">Self.</div>
