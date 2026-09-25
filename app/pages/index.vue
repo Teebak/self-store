@@ -36,33 +36,58 @@ const heroSources = [
 const heroVideo = ref<HTMLVideoElement | null>(null)
 const videoReady = ref(false)
 
+let unlockPlayback: (() => void) | undefined
+
 onMounted(() => {
   const el = heroVideo.value
   if (!el) return
   el.muted = true
-  // Fade in only once frames are actually playing, not just when the first one decodes
-  const reveal = () => { videoReady.value = true }
-  if (!el.paused && el.readyState >= 3) reveal()
-  else el.addEventListener('playing', reveal, { once: true })
-  // Autoplay normally starts it; this covers browsers that waited for hydration
-  const p = el.play()
-  if (p && p.catch) p.catch(() => {})
+
+  // Fade the placeholder out once frames are actually moving. Autoplay may have started
+  // before hydration, so check the current state as well as listening for events.
+  const reveal = () => {
+    if (!el.paused && el.currentTime > 0) videoReady.value = true
+  }
+  el.addEventListener('playing', reveal)
+  el.addEventListener('timeupdate', reveal)
+  reveal()
+
+  const tryPlay = () => {
+    const p = el.play()
+    if (p && p.catch) p.catch(() => {})
+  }
+  if (el.paused) tryPlay()
+
+  // Some phones block autoplay until a user gesture (iOS Low Power Mode, Android Data Saver):
+  // start the video on the first tap anywhere.
+  unlockPlayback = () => {
+    if (el.paused) tryPlay()
+    removeUnlock()
+  }
+  const removeUnlock = () => {
+    for (const e of ['touchend', 'click', 'keydown']) window.removeEventListener(e, unlockPlayback!)
+  }
+  for (const e of ['touchend', 'click', 'keydown']) window.addEventListener(e, unlockPlayback, { passive: true })
+})
+onUnmounted(() => {
+  if (unlockPlayback) for (const e of ['touchend', 'click', 'keydown']) window.removeEventListener(e, unlockPlayback)
 })
 </script>
 
 <template>
   <main class="page-rise">
     <section style="position:relative;min-height:clamp(540px,86vh,900px);overflow:hidden;background:#ddd0c4;color:#7d6d61;display:flex;flex-direction:column;justify-content:flex-end">
-      <div
-        :style="{ position: 'absolute', inset: '-40px', backgroundImage: `url(${heroPoster})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px)' }"
-      />
+      <!-- The video stays visible (iOS won't autoplay a hidden one); the placeholder covers it until it plays -->
       <video
         ref="heroVideo"
         muted autoplay loop playsinline preload="auto"
-        :style="{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity .8s ease', opacity: videoReady ? '1' : '0' }"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"
       >
         <source v-for="s in heroSources" :key="s.file" :src="videoBase + s.file" :media="s.media" :type="s.type">
       </video>
+      <div
+        :style="{ position: 'absolute', inset: '-40px', backgroundImage: `url(${heroPoster})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px)', transition: 'opacity .8s ease', opacity: videoReady ? '0' : '1', pointerEvents: 'none' }"
+      />
       <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(43,35,30,0.34) 0%,rgba(43,35,30,0.12) 34%,rgba(43,35,30,0.62) 100%);pointer-events:none" />
       <div style="position:relative;margin-top:auto;padding:0 clamp(20px,5vw,84px);display:flex;justify-content:flex-start;pointer-events:none">
         <div style="font-family:Anton,Impact,sans-serif;font-weight:400;font-size:clamp(76px,18vw,264px);letter-spacing:-0.012em;text-transform:uppercase;line-height:0.82;color:#ffffff;text-shadow:0 2px 44px rgba(43,35,30,0.42);display:inline-block;transform:scaleY(1.1);transform-origin:bottom left">Self.</div>
