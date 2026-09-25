@@ -9,6 +9,9 @@ const pillars = [
   { label: 'Delivery', text: 'Baghdad same day. Governorates within forty-eight hours.' }
 ]
 
+// Tiny copy of the hero video's first frame, shown blurred until the video can play
+const heroPoster = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAfAEADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAABgcCAwQF/8QALhAAAgECBAMHAwUAAAAAAAAAAQIDBBEABRIhEzFBBgciUWFxgZGhsRQVJTJS/8QAGAEBAAMBAAAAAAAAAAAAAAAABAECAwX/xAAcEQADAQADAQEAAAAAAAAAAAAAAQIRAxIhE1H/2gAMAwEAAhEDEQA/AGGYfTEDT3wrVzzN5WH8xUi43HGbb74r/f8AM5JFQZrVEFufHYX9OeLlNGm8eiJhiUe8Y+PycC3ZKomqI8weaSR/Gmku+o8jjf2hkzZcoK5QgMjGzuGAZF8xf88x08xhb9NoW+Ar22zFanMtCSLZGZNOrcEbG49/nbATWiQNqbdTywSZrGlElLQmKMzRxh5XsCdbC5F+tthe/THMlhjkiIkF7csHVKa0U4dThw154a3dnVmXI56VmcmCXUoJuFVhsB8hj84WlUiJTq2gI2ogC1jbB93WG0WZJY3HCO/rrxu32WhuvV4Dz5PUl9IIuN7G/L6YhBl0yHiBS5Teym3xjC1NU1K3lq5pCejG/wCTjVRdnJay3DnS/UG4IxP1T80r8q/A27ImRKSr4yBGPD2+GxbmOeRVNU2TxuEjdH48/MqApLAeu3PpgZySjagrHi/VywiRlBZArq9jyIIuOZ3GKayNVzFwzNMBJ4i+xN9yDb1vywbl5Glsi+DjW5RVUUpCI3iAQlF1m7kA3BPlsdvb0xnnSwscaKiq49Qr6AlgiW53AUL97YrqSggUgNrJNzfa3t73wfXorFgP1ZY1B1En3OGb3YwKmR1ExSzyTaS3+gFBA+NR+uF3UU4mcWsC2wJ88H/djNqoKyBpPHFKLx2/rcWvfrfT9vXdyaco51Jqmf/Z'
+
 const heroVideo = ref<HTMLVideoElement | null>(null)
 const videoReady = ref(false)
 
@@ -34,9 +37,9 @@ onMounted(() => {
 <template>
   <main class="page-rise">
     <section style="position:relative;min-height:clamp(540px,86vh,900px);overflow:hidden;background:#ddd0c4;color:#7d6d61;display:flex;flex-direction:column;justify-content:flex-end">
-      <div style="position:absolute;inset:0">
-        <ImageSlot ph="hero — campaign still, 2400×1400" align="top" src="/images/dior.webp" />
-      </div>
+      <div
+        :style="{ position: 'absolute', inset: '-40px', backgroundImage: `url(${heroPoster})`, backgroundSize: 'cover', backgroundPosition: 'center', filter: 'blur(18px)' }"
+      />
       <video
         ref="heroVideo"
         muted loop playsinline preload="none"
