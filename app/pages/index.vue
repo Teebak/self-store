@@ -19,18 +19,17 @@ onMounted(() => {
   const el = heroVideo.value
   if (!el) return
   el.muted = true
-  el.addEventListener('loadeddata', () => {
-    videoReady.value = true
+  // Fade in only once frames are actually playing, not just when the first one decodes
+  el.addEventListener('playing', () => { videoReady.value = true }, { once: true })
+  el.addEventListener('canplay', () => {
     const p = el.play()
     if (p && p.catch) p.catch(() => {})
-  })
-  const load = () => {
-    el.preload = 'auto'
-    el.src = useRuntimeConfig().app.baseURL.replace(/\/$/, '') + '/images/selfvid.mp4'
-    el.load()
-  }
-  if (typeof requestIdleCallback === 'function') requestIdleCallback(load, { timeout: 3000 })
-  else setTimeout(load, 1200)
+  }, { once: true })
+  // 1280px (~2.5 MB) for phones, 1920px (~4 MB) for larger screens
+  const file = window.matchMedia('(max-width: 900px)').matches ? 'hero-1280.mp4' : 'hero-1920.mp4'
+  el.preload = 'auto'
+  el.src = useRuntimeConfig().app.baseURL.replace(/\/$/, '') + '/images/' + file
+  el.load()
 })
 </script>
 
