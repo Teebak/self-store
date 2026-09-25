@@ -12,17 +12,11 @@ const pillars = [
 // Mobile pillar rotator (desktop shows all three; the index is simply ignored there)
 const activePillar = ref(0)
 let pillarTimer: ReturnType<typeof setInterval> | undefined
-function startPillars() {
-  clearInterval(pillarTimer)
+onMounted(() => {
   pillarTimer = setInterval(() => {
     activePillar.value = (activePillar.value + 1) % pillars.length
   }, 4000)
-}
-function showPillar(i: number) {
-  activePillar.value = i
-  startPillars()
-}
-onMounted(startPillars)
+})
 onUnmounted(() => clearInterval(pillarTimer))
 
 // Tiny copy of the hero video's first frame, shown blurred until the video can play
@@ -89,14 +83,6 @@ onMounted(() => {
           <div style="font-family:'EB Garamond',Georgia,serif;font-size:clamp(17px,1.5vw,22px);line-height:1.4;color:#3b312b">{{ p.text }}</div>
         </div>
       </div>
-      <div class="pillar-dots">
-        <button
-          v-for="(p, i) in pillars" :key="p.label"
-          type="button" :aria-label="`Show ${p.label}`"
-          :class="{ active: i === activePillar }"
-          @click="showPillar(i)"
-        />
-      </div>
     </section>
 
     <section style="padding:clamp(56px,9vh,120px) clamp(18px,5vw,84px)">
@@ -127,7 +113,6 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
-.pillar-dots { display: none; }
 
 /* Mobile: one block that cycles through the three pillars */
 @media (max-width: 760px) {
@@ -144,24 +129,6 @@ onMounted(() => {
     opacity: 1;
     transform: none;
     pointer-events: auto;
-  }
-  .pillar-dots {
-    display: flex;
-    gap: 10px;
-    padding: 0 clamp(22px, 3vw, 44px) 26px;
-  }
-  .pillar-dots button {
-    width: 18px;
-    height: 2px;
-    padding: 0;
-    border: none;
-    background: #d3c6ba;
-    cursor: pointer;
-    transition: background 0.4s ease, width 0.4s ease;
-  }
-  .pillar-dots button.active {
-    width: 32px;
-    background: #b4552f;
   }
 }
 </style>
