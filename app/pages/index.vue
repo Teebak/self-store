@@ -9,6 +9,22 @@ const pillars = [
   { label: 'Delivery', text: 'Baghdad same day. Governorates within forty-eight hours.' }
 ]
 
+// Mobile pillar rotator (desktop shows all three; the index is simply ignored there)
+const activePillar = ref(0)
+let pillarTimer: ReturnType<typeof setInterval> | undefined
+function startPillars() {
+  clearInterval(pillarTimer)
+  pillarTimer = setInterval(() => {
+    activePillar.value = (activePillar.value + 1) % pillars.length
+  }, 4000)
+}
+function showPillar(i: number) {
+  activePillar.value = i
+  startPillars()
+}
+onMounted(startPillars)
+onUnmounted(() => clearInterval(pillarTimer))
+
 // Tiny copy of the hero video's first frame, shown blurred until the video can play
 const heroPoster = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAoHBwgHBgoICAgLCgoLDhgQDg0NDh0VFhEYIx8lJCIfIiEmKzcvJik0KSEiMEExNDk7Pj4+JS5ESUM8SDc9Pjv/2wBDAQoLCw4NDhwQEBw7KCIoOzs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozv/wAARCAAfAEADASIAAhEBAxEB/8QAGQAAAgMBAAAAAAAAAAAAAAAABgcCAwQF/8QALhAAAgECBAMHAwUAAAAAAAAAAQIDBBEABRIhEzFBBgciUWFxgZGhsRQVJTJS/8QAGAEBAAMBAAAAAAAAAAAAAAAABAECAwX/xAAcEQADAQADAQEAAAAAAAAAAAAAAQIRAxIhE1H/2gAMAwEAAhEDEQA/AGGYfTEDT3wrVzzN5WH8xUi43HGbb74r/f8AM5JFQZrVEFufHYX9OeLlNGm8eiJhiUe8Y+PycC3ZKomqI8weaSR/Gmku+o8jjf2hkzZcoK5QgMjGzuGAZF8xf88x08xhb9NoW+Ar22zFanMtCSLZGZNOrcEbG49/nbATWiQNqbdTywSZrGlElLQmKMzRxh5XsCdbC5F+tthe/THMlhjkiIkF7csHVKa0U4dThw154a3dnVmXI56VmcmCXUoJuFVhsB8hj84WlUiJTq2gI2ogC1jbB93WG0WZJY3HCO/rrxu32WhuvV4Dz5PUl9IIuN7G/L6YhBl0yHiBS5Teym3xjC1NU1K3lq5pCejG/wCTjVRdnJay3DnS/UG4IxP1T80r8q/A27ImRKSr4yBGPD2+GxbmOeRVNU2TxuEjdH48/MqApLAeu3PpgZySjagrHi/VywiRlBZArq9jyIIuOZ3GKayNVzFwzNMBJ4i+xN9yDb1vywbl5Glsi+DjW5RVUUpCI3iAQlF1m7kA3BPlsdvb0xnnSwscaKiq49Qr6AlgiW53AUL97YrqSggUgNrJNzfa3t73wfXorFgP1ZY1B1En3OGb3YwKmR1ExSzyTaS3+gFBA+NR+uF3UU4mcWsC2wJ88H/djNqoKyBpPHFKLx2/rcWvfrfT9vXdyaco51Jqmf/Z'
 
@@ -62,10 +78,24 @@ onMounted(() => {
       </div>
     </section>
 
-    <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));background:#efe8e2;border-bottom:1px solid #d8ccc2">
-      <div v-for="p in pillars" :key="p.label" style="padding:clamp(30px,4vw,54px) clamp(22px,3vw,44px);border-right:1px solid #ded2c8">
-        <div style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#6f6156;margin-bottom:16px">{{ p.label }}</div>
-        <div style="font-family:'EB Garamond',Georgia,serif;font-size:clamp(17px,1.5vw,22px);line-height:1.4;color:#3b312b">{{ p.text }}</div>
+    <section class="pillars" style="background:#efe8e2;border-bottom:1px solid #d8ccc2">
+      <div class="pillars-track">
+        <div
+          v-for="(p, i) in pillars" :key="p.label"
+          class="pillar" :class="{ active: i === activePillar }"
+          style="padding:clamp(30px,4vw,54px) clamp(22px,3vw,44px);border-right:1px solid #ded2c8"
+        >
+          <div style="font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:#6f6156;margin-bottom:16px">{{ p.label }}</div>
+          <div style="font-family:'EB Garamond',Georgia,serif;font-size:clamp(17px,1.5vw,22px);line-height:1.4;color:#3b312b">{{ p.text }}</div>
+        </div>
+      </div>
+      <div class="pillar-dots">
+        <button
+          v-for="(p, i) in pillars" :key="p.label"
+          type="button" :aria-label="`Show ${p.label}`"
+          :class="{ active: i === activePillar }"
+          @click="showPillar(i)"
+        />
       </div>
     </section>
 
@@ -91,3 +121,47 @@ onMounted(() => {
     </section>
   </main>
 </template>
+
+<style scoped>
+.pillars-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+.pillar-dots { display: none; }
+
+/* Mobile: one block that cycles through the three pillars */
+@media (max-width: 760px) {
+  .pillars-track { grid-template-columns: 1fr; }
+  .pillar {
+    grid-area: 1 / 1;
+    border-right: none !important;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+    pointer-events: none;
+  }
+  .pillar.active {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+  .pillar-dots {
+    display: flex;
+    gap: 10px;
+    padding: 0 clamp(22px, 3vw, 44px) 26px;
+  }
+  .pillar-dots button {
+    width: 18px;
+    height: 2px;
+    padding: 0;
+    border: none;
+    background: #d3c6ba;
+    cursor: pointer;
+    transition: background 0.4s ease, width 0.4s ease;
+  }
+  .pillar-dots button.active {
+    width: 32px;
+    background: #b4552f;
+  }
+}
+</style>
