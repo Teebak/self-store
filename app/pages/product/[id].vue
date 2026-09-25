@@ -78,7 +78,7 @@ function goShop() {
             v-for="(sh, i) in shots" :key="sh.id"
             :style="{ position: 'absolute', inset: 0, transition: 'opacity .6s ease', opacity: shot === i ? '1' : '0', pointerEvents: shot === i ? 'auto' : 'none' }"
           >
-            <ImageSlot :ph="sh.ph" :src="sh.src" />
+            <ImageSlot :ph="sh.ph" :src="sh.src" :eager="i === 0" />
           </div>
           <div v-if="product.sale" style="position:absolute;top:0;left:0;background:#b4552f;color:#f6f1ec;font-size:8.5px;letter-spacing:0.22em;text-transform:uppercase;padding:7px 12px;pointer-events:none;font-weight:600">Sale</div>
         </div>
